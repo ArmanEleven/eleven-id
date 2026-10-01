@@ -37,13 +37,49 @@ notepad .env
 
 ### Easy Install
 
-After downloading the repository:
+After downloading the repository, run:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\install.ps1
 ```
 
-Or run:
+The installer will:
+
+1. Create the Python virtual environment.
+2. Install all required packages.
+3. Guide you through Telegram API setup.
+4. Ask for `API_ID`, `API_HASH` and your Telegram phone number.
+5. Create the `.env` file automatically.
+6. Start Eleven ID.
+
+### 🔑 Getting Telegram API Credentials
+
+Open the official Telegram website:
+
+**https://my.telegram.org/apps**
+
+Then:
+
+1. Sign in with your Telegram phone number.
+2. Open **API development tools**.
+3. Create an application if you do not already have one.
+4. Copy **api_id** → use it as `API_ID`.
+5. Copy **api_hash** → use it as `API_HASH`.
+6. Use your Telegram phone number in international format, for example `+989xxxxxxxxxx`.
+
+The installer asks for these values after the dependencies are installed, so you do **not** need to create `.env` manually.
+
+Or, if you want to configure everything manually:
+
+```powershell
+py -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+Copy-Item .env.example .env
+notepad .env
+.\.venv\Scripts\python.exe main.py
+```
+
+You can also run:
 
 ```text
 run.bat
@@ -51,13 +87,15 @@ run.bat
 
 ### Environment
 
-Create `.env` from `.env.example`:
+The installer creates `.env` for you after installing the dependencies:
 
 ```env
 API_ID=12345678
 API_HASH=your_api_hash_here
 PHONE=+989xxxxxxxxxx
 ```
+
+You can also create it manually from `.env.example`.
 
 Do **not** publish `.env` or any `.session` file.
 
@@ -105,6 +143,40 @@ Use the tool responsibly and respect Telegram's limits. FloodWait responses are 
 
 ### نصب سریع
 
+کافی است بعد از دانلود پروژه، این دستور را اجرا کنید:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\install.ps1
+```
+
+نصب‌کننده خودش:
+
+1. محیط Python را می‌سازد.
+2. پکیج‌های موردنیاز را نصب می‌کند.
+3. راهنمای ساخت API تلگرام را نشان می‌دهد.
+4. `API_ID`، `API_HASH` و شماره تلگرام را از شما می‌گیرد.
+5. فایل `.env` را خودش می‌سازد.
+6. برنامه را اجرا می‌کند.
+
+### 🔑 ساخت API تلگرام
+
+به سایت رسمی تلگرام برو:
+
+**https://my.telegram.org/apps**
+
+سپس:
+
+1. با شماره تلگرامت وارد شو.
+2. وارد بخش **API development tools** شو.
+3. اگر برنامه‌ای نداری، یک Application بساز.
+4. مقدار **api_id** را بردار و در `API_ID` وارد کن.
+5. مقدار **api_hash** را بردار و در `API_HASH` وارد کن.
+6. شماره تلگرامت را با فرمت بین‌المللی وارد کن؛ مثلاً `+989xxxxxxxxxx`.
+
+بعد از نصب پکیج‌ها، خود نصب‌کننده همین موارد را ازت می‌پرسد؛ بنابراین لازم نیست دستی `.env` بسازی.
+
+اگر خواستی دستی نصب کنی:
+
 ```powershell
 py -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -r requirements.txt
@@ -113,15 +185,11 @@ notepad .env
 .\.venv\Scripts\python.exe main.py
 ```
 
-یا از نصب‌کننده استفاده کنید:
-
-```powershell
-powershell -ExecutionPolicy Bypass -File .\install.ps1
-```
-
 ### نکات امنیتی
 
 فایل `.env` و فایل‌های Session را هرگز در GitHub منتشر نکنید. این فایل‌ها در `.gitignore` قرار گرفته‌اند.
+
+**API_HASH مثل رمز عبور حساس است؛ آن را برای کسی ارسال نکنید.**
 
 ### احراز هویت
 
