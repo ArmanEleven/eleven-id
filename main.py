@@ -184,11 +184,14 @@ def generate_username(settings):
     return prefix + required + suffix
 
 
-def build_candidates(settings):
+def build_candidates(settings, blocked=None):
     candidates = []
-    seen = set()
+    seen = set(blocked or set())
 
-    for _ in range(settings["attempts"] * 3):
+    # Leave enough room for duplicates/rejected candidates while generating.
+    max_generation_rounds = max(settings["attempts"] * 10, 1000)
+
+    for _ in range(max_generation_rounds):
         username = generate_username(settings)
 
         if not (MIN_USERNAME_LENGTH <= len(username) <= MAX_USERNAME_LENGTH):
@@ -200,17 +203,19 @@ def build_candidates(settings):
         if settings["required"] and settings["required"] not in username:
             continue
 
-        if username not in seen:
-            seen.add(username)
-            candidates.append(username)
+        if username in seen:
+            continue
 
-            if len(candidates) >= settings["attempts"]:
-                break
+        seen.add(username)
+        candidates.append(username)
+
+        if len(candidates) >= settings["attempts"]:
+            break
 
     if len(candidates) < settings["attempts"]:
         raise RuntimeError(
-            "Could not generate enough unique usernames with these settings. "
-            "Try a longer range, remove the required text, or allow more characters."
+            "Could not generate enough new unique usernames with these settings. "
+            "Try a longer length range, remove the required text, or allow more characters."
         )
 
     return candidates
@@ -273,10 +278,24 @@ async def main():
         print(f"\n[INPUT ERROR] {e}")
         return
 
-    print("\nGenerating candidates...")
-    candidates = build_candidates(settings)
+    tested = set()
 
-    print(f"Generated {len(candidates)} unique usernames.")
+    if TESTED.exists():
+        with open(TESTED, "r", encoding="utf-8") as f:
+            tested = {
+                line.strip().lower()
+                for line in f
+                if line.strip()
+            }
+
+    print("\nGenerating candidates...")
+    try:
+        candidates = build_candidates(settings, tested)
+    except RuntimeError as e:
+        print(f"\n[GENERATOR ERROR] {e}")
+        return
+
+    print(f"Generated {len(candidates)} new unique usernames.")
     print()
 
     client = TelegramClient(
@@ -301,20 +320,8 @@ async def main():
 
     available = []
     purchase_available = []
-    tested = set()
-
-    if TESTED.exists():
-        with open(TESTED, "r", encoding="utf-8") as f:
-            tested = {
-                line.strip().lower()
-                for line in f
-                if line.strip()
-            }
 
     for number, username in enumerate(candidates, start=1):
-        if username in tested:
-            continue
-
         print(
             f"[{number}/{len(candidates)}] "
             f"Checking @{username} ... ",
