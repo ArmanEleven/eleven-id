@@ -1,5 +1,7 @@
 import asyncio
 import os
+import random
+import string
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -34,221 +36,225 @@ SESSION = str(BASE_DIR / "telegram_finder")
 RESULTS = BASE_DIR / "available.txt"
 TESTED = BASE_DIR / "tested.txt"
 
-
-# =========================================================
-# 500 CURATED USERNAMES
-# =========================================================
-
-USERNAMES = [
-    # names / name-like
-    "alina", "elena", "milen", "mykel", "miley",
-    "elina", "nolan", "logan", "lucas", "louis",
-    "milan", "miles", "riley", "rylan", "ryder",
-    "riven", "raven", "river", "reina", "reese",
-    "siena", "siena", "selena", "soren", "soren",
-    "niven", "ninae", "nolan", "noelle", "naomi",
-    "kairo", "kaiya", "kiana", "kiran", "keira",
-    "karen", "karin", "livia", "livio", "lilia",
-    "liana", "lydia", "mayae", "maria", "marin",
-    "mario", "mariah", "dylan", "dario", "davin",
-    "diana", "derek", "devin", "evanx", "evian",
-    "ariah", "ariel", "arian", "avery", "alexa",
-    "alexi", "amber", "amelia", "bella", "bianca",
-    "brina", "celia", "clara", "claire", "cora",
-    "dalia", "daria", "elise", "ellae", "emily",
-    "emmae", "erica", "erinx", "freya", "grace",
-    "hailey", "hazel", "helen", "irisx", "islaa",
-    "jadee", "julia", "julie", "kylie", "layla",
-    "leila", "lenae", "lilac", "lilia", "lucia",
-    "lucie", "lunae", "lydia", "maeve", "mabel",
-    "madie", "madison", "naira", "natalie", "nayae",
-    "nella", "olivia", "oriana", "paige", "raina",
-    "sasha", "siena", "silvia", "sonia", "stella",
-    "talia", "tessa", "valen", "vera", "violet",
-    "vivian", "yarae", "zarae", "zelda", "zoeaa",
-
-    # real / meaningful words
-    "lumen", "haven", "raven", "river", "ocean",
-    "oasis", "flora", "fauna", "lunar", "solar",
-    "novae", "orbit", "comet", "cosmo", "terra",
-    "aurora", "ember", "flame", "blaze", "storm",
-    "cloud", "rainy", "snowy", "sunny", "bloom",
-    "dream", "dreamy", "magic", "mystic", "ethos",
-    "vivid", "vital", "velvet", "silent", "silver",
-    "golden", "crystal", "scarlet", "violet", "indigo",
-    "azure", "coral", "ivory", "amber", "jade",
-    "pearl", "opal", "ruby", "onyx", "topaz",
-    "sable", "ivory", "linen", "velour", "satin",
-    "urban", "royal", "regal", "noble", "elite",
-    "prime", "major", "brave", "boldly", "grand",
-    "rapid", "swift", "agile", "vivid", "fresh",
-    "clean", "clear", "bright", "shiny", "glow",
-    "shine", "spark", "flare", "light", "dawn",
-    "dusk", "night", "dream", "wishy", "faith",
-    "hope", "peace", "grace", "truth", "trust",
-    "heart", "soul", "spirit", "angel", "heaven",
-    "bliss", "smile", "happy", "lucky", "charm",
-    "magic", "wonder", "beauty", "lovely", "sweet",
-    "dreamer", "wander", "voyage", "travel", "roamer",
-    "forest", "garden", "meadow", "island", "coast",
-    "shore", "beach", "ocean", "wavey", "breeze",
-    "windy", "cloudy", "sunset", "sunrise", "moonlight",
-    "starlit", "stella", "cosmic", "galaxy", "venus",
-    "marsx", "neptune", "saturn", "pluto", "apollo",
-
-    # brandable
-    "velin", "velia", "velar", "velor", "velis",
-    "vella", "viora", "viven", "vexia", "vexor",
-    "vexen", "nexia", "nexon", "nexar", "nexel",
-    "nexis", "nexor", "nexen", "nivia", "nivor",
-    "nivex", "novia", "novel", "novar", "novin",
-    "novix", "novel", "lunia", "lunex", "lunor",
-    "lunar", "lumia", "lumex", "lumor", "lumis",
-    "aurea", "auren", "aurix", "auria", "avena",
-    "avira", "avion", "avira", "arven", "arvin",
-    "arion", "ariel", "orion", "orionx", "oriva",
-    "orelia", "elora", "elara", "elvia", "elora",
-    "evora", "evian", "evora", "evara", "evelin",
-    "soren", "sorin", "soria", "sorel", "sorenx",
-    "riven", "rivan", "rivenx", "rivia", "rivena",
-    "ravin", "ravia", "ravenx", "ravel", "raven",
-    "maven", "mavie", "mavin", "mavix", "mavon",
-    "milan", "milano", "milea", "milen", "milon",
-    "mylen", "myles", "mykel", "mykae", "myria",
-    "kairo", "kairi", "kaien", "kaine", "kairox",
-    "kaela", "kaeli", "kalen", "kalin", "kalix",
-    "daven", "davin", "davon", "dario", "darien",
-    "daren", "daria", "davin", "devin", "devon",
-    "evren", "evrenx", "evora", "evian", "evira",
-    "silan", "silen", "silas", "silva", "sivan",
-    "siven", "sorin", "soren", "solen", "solis",
-    "solia", "solar", "sonia", "sonic", "sonar",
-    "talen", "talia", "talon", "tavin", "tavia",
-    "torin", "toria", "tovin", "varen", "varin",
-    "varia", "vance", "vanya", "vella", "velin",
-    "zaren", "zaria", "ziven", "zivan", "zoria",
-    "zorin", "zella", "zelia", "zelin", "ziven",
-
-    # aesthetic / short
-    "velvet", "midnight", "daydream", "moonlit",
-    "starlit", "sunbeam", "moonbeam", "wildfire",
-    "everly", "eternal", "endless", "infinite",
-    "infinity", "timeless", "forever", "serene",
-    "serenity", "elegant", "classic", "modern",
-    "minimal", "simple", "secret", "hidden",
-    "mystery", "shadow", "shaded", "darkly",
-    "nightly", "dreamer", "dreamy", "lovely",
-    "pretty", "beauty", "divine", "angelic",
-    "celestial", "heavenly", "cosmic", "stellar",
-    "astral", "nebula", "galaxy", "eclipse",
-    "zenith", "horizon", "sunrise", "sunset",
-    "twilight", "evening", "morning", "autumn",
-    "winter", "spring", "summer", "breeze",
-    "whisper", "echoes", "melody", "rhythm",
-    "music", "sonnet", "poetic", "poetry", "verse",
-    "story", "novel", "novelty", "chapter", "legend",
-    "legacy", "destiny", "fortune", "wonder",
-    "miracle", "blessed", "gentle", "kindly",
-    "honest", "humble", "noble", "royal", "regal",
-    "golden", "silver", "crimson", "scarlet", "violet",
-    "indigo", "azure", "cobalt", "coral", "ivory",
-    "pearl", "opal", "ruby", "amber", "jade",
-    "onyx", "sapphire", "topaz", "diamond", "crystal",
-
-    # tech / modern
-    "pixel", "pixels", "cloudy", "cyber", "cyberx",
-    "coder", "coding", "devon", "devin", "logic",
-    "logicx", "binary", "bytey", "bytes", "cache",
-    "server", "stack", "stacks", "script", "syntax",
-    "debug", "debugx", "matrix", "vector", "vertex",
-    "quantum", "neural", "vision", "future", "futurex",
-    "digital", "modern", "techno", "robot", "robotx",
-    "cypher", "cipher", "signal", "socket", "kernel",
-    "memory", "module", "system", "engine", "portal",
-    "online", "offline", "stream", "streamx", "pixelx",
-    "nexus", "nexusr", "orbitx", "nova", "novax",
-    "astro", "astral", "cosmos", "cosmic", "lunar",
-    "solarx", "stella", "stellar", "zenith", "apex",
-    "prime", "alpha", "omega", "sigma", "delta",
-    "gamma", "theta", "lambda", "vector", "vertex",
-    "matrix", "fusion", "vision", "focus", "motion",
-    "action", "energy", "power", "pulse", "tempo",
-    "spark", "flare", "flash", "glow", "light",
-    "bright", "shine", "shiny", "blaze", "flame",
-    "ember", "frost", "frosty", "storm", "thunder",
-    "lightning", "rain", "rainy", "cloud", "cloudy",
-    "wind", "windy", "breeze", "ocean", "river",
-    "raven", "wolf", "tiger", "eagle", "falcon",
-    "lion", "panther", "foxes", "viper", "cobra",
-    "leopard", "jaguar", "phoenix", "dragon", "atlas",
-    "apollo", "hermes", "ares", "zeus", "venus",
-    "loki", "odin", "nova", "orion", "titan",
-]
+MIN_USERNAME_LENGTH = 5
+MAX_USERNAME_LENGTH = 32
+MAX_GENERATION_ATTEMPTS = 1_000_000
 
 
 # =========================================================
-# CLEAN + UNIQUE
+# USER INPUT
 # =========================================================
 
-USERNAMES = list(dict.fromkeys(
-    u.lower()
-    for u in USERNAMES
-    if u.isalpha() and u.isascii() and len(u) >= 5
-))
+def ask_choice(prompt, choices):
+    while True:
+        value = input(prompt).strip()
+        if value in choices:
+            return value
+        print(f"Invalid choice. Choose one of: {', '.join(choices)}")
 
-print(f"Loaded {len(USERNAMES)} usernames.")
+
+def ask_int(prompt, minimum, maximum=None):
+    while True:
+        try:
+            value = int(input(prompt).strip())
+        except ValueError:
+            print("Please enter a valid number.")
+            continue
+
+        if value < minimum:
+            print(f"Value must be at least {minimum}.")
+            continue
+
+        if maximum is not None and value > maximum:
+            print(f"Value must be at most {maximum}.")
+            continue
+
+        return value
+
+
+def get_generator_settings():
+    print()
+    print("=" * 55)
+    print(" USERNAME GENERATOR")
+    print("=" * 55)
+    print()
+    print("Allowed characters:")
+    print("1. English letters")
+    print("2. English letters + numbers")
+    print("3. English letters + _")
+    print("4. English letters + numbers + _")
+    print()
+
+    character_mode = ask_choice("Select [1-4]: ", {"1", "2", "3", "4"})
+
+    character_sets = {
+        "1": string.ascii_lowercase,
+        "2": string.ascii_lowercase + string.digits,
+        "3": string.ascii_lowercase + "_",
+        "4": string.ascii_lowercase + string.digits + "_",
+    }
+
+    allowed_chars = character_sets[character_mode]
+
+    required = input(
+        "\nLetters/text that must appear in the username (Enter = none): "
+    ).strip().lower()
+
+    if required and any(char not in allowed_chars for char in required):
+        raise ValueError(
+            "The required text contains characters that are not allowed "
+            "by your selected character mode."
+        )
+
+    if required and required[0] not in string.ascii_lowercase:
+        raise ValueError(
+            "The required text must start with an English letter because "
+            "Telegram usernames must start with a letter."
+        )
+
+    if len(required) > MAX_USERNAME_LENGTH:
+        raise ValueError(
+            f"Required text cannot be longer than {MAX_USERNAME_LENGTH} characters."
+        )
+
+    min_length = ask_int(
+        f"Minimum length [{MIN_USERNAME_LENGTH}-{MAX_USERNAME_LENGTH}]: ",
+        MIN_USERNAME_LENGTH,
+        MAX_USERNAME_LENGTH,
+    )
+
+    max_length = ask_int(
+        f"Maximum length [{min_length}-{MAX_USERNAME_LENGTH}]: ",
+        min_length,
+        MAX_USERNAME_LENGTH,
+    )
+
+    if len(required) > max_length:
+        raise ValueError(
+            "Required text is longer than the selected maximum username length."
+        )
+
+    attempts = ask_int(
+        "\nHow many usernames should be checked? ",
+        1,
+        MAX_GENERATION_ATTEMPTS,
+    )
+
+    return {
+        "allowed_chars": allowed_chars,
+        "required": required,
+        "min_length": min_length,
+        "max_length": max_length,
+        "attempts": attempts,
+    }
+
+
+def generate_username(settings):
+    allowed_chars = settings["allowed_chars"]
+    required = settings["required"]
+    min_length = settings["min_length"]
+    max_length = settings["max_length"]
+
+    length = random.randint(min_length, max_length)
+
+    if not required:
+        username = random.choice(string.ascii_lowercase)
+        if length > 1:
+            username += "".join(
+                random.choice(allowed_chars)
+                for _ in range(length - 1)
+            )
+        return username
+
+    if len(required) == length:
+        return required
+
+    prefix_length = random.randint(0, length - len(required))
+    suffix_length = length - len(required) - prefix_length
+
+    prefix = "".join(
+        random.choice(string.ascii_lowercase)
+        for _ in range(prefix_length)
+    )
+    suffix = "".join(
+        random.choice(allowed_chars)
+        for _ in range(suffix_length)
+    )
+
+    return prefix + required + suffix
+
+
+def build_candidates(settings):
+    candidates = []
+    seen = set()
+
+    for _ in range(settings["attempts"] * 3):
+        username = generate_username(settings)
+
+        if not (MIN_USERNAME_LENGTH <= len(username) <= MAX_USERNAME_LENGTH):
+            continue
+
+        if username[0] not in string.ascii_lowercase:
+            continue
+
+        if settings["required"] and settings["required"] not in username:
+            continue
+
+        if username not in seen:
+            seen.add(username)
+            candidates.append(username)
+
+            if len(candidates) >= settings["attempts"]:
+                break
+
+    if len(candidates) < settings["attempts"]:
+        raise RuntimeError(
+            "Could not generate enough unique usernames with these settings. "
+            "Try a longer range, remove the required text, or allow more characters."
+        )
+
+    return candidates
 
 
 # =========================================================
-# CHECK
+# TELEGRAM CHECK
 # =========================================================
 
 async def check_username(client, username):
-
     while True:
         try:
-
             result = await client(
                 functions.account.CheckUsernameRequest(
                     username=username
                 )
             )
-
             return result
 
         except FloodWaitError as e:
-
             print(
                 f"\n[FLOOD WAIT] Telegram asks us to wait "
                 f"{e.seconds} seconds..."
             )
-
             await asyncio.sleep(e.seconds)
 
         except RPCError as e:
-
             name = e.__class__.__name__
 
-            # این موارد معمولاً یعنی username قابل استفاده نیست
             if name in {
                 "UsernameInvalidError",
                 "UsernameOccupiedError",
             }:
-                return False
+                return "taken"
 
-            print(
-                f"\n[TELEGRAM ERROR] @{username} -> {name}"
-            )
+            if name == "UsernamePurchaseAvailableError":
+                return "purchase"
 
-            return None
+            print(f"\n[TELEGRAM ERROR] @{username} -> {name}")
+            return "unknown"
 
         except Exception as e:
-
-            print(
-                f"\n[ERROR] @{username} -> {type(e).__name__}"
-            )
-
-            return None
+            print(f"\n[ERROR] @{username} -> {type(e).__name__}")
+            return "unknown"
 
 
 # =========================================================
@@ -256,18 +262,28 @@ async def check_username(client, username):
 # =========================================================
 
 async def main():
+    print()
+    print("=" * 55)
+    print(" TELEGRAM USERNAME FINDER")
+    print("=" * 55)
+
+    try:
+        settings = get_generator_settings()
+    except ValueError as e:
+        print(f"\n[INPUT ERROR] {e}")
+        return
+
+    print("\nGenerating candidates...")
+    candidates = build_candidates(settings)
+
+    print(f"Generated {len(candidates)} unique usernames.")
+    print()
 
     client = TelegramClient(
         SESSION,
         API_ID,
         API_HASH
     )
-
-    print()
-    print("=" * 55)
-    print(" TELEGRAM USERNAME FINDER")
-    print("=" * 55)
-    print()
 
     await client.start(phone=PHONE)
 
@@ -280,77 +296,54 @@ async def main():
     )
 
     print()
-    print(f"Total candidates: {len(USERNAMES)}")
+    print(f"Total candidates: {len(candidates)}")
     print()
 
     available = []
+    purchase_available = []
     tested = set()
 
     if TESTED.exists():
-
-        with open(
-            TESTED,
-            "r",
-            encoding="utf-8"
-        ) as f:
-
+        with open(TESTED, "r", encoding="utf-8") as f:
             tested = {
                 line.strip().lower()
                 for line in f
                 if line.strip()
             }
 
-    for number, username in enumerate(
-        USERNAMES,
-        start=1
-    ):
-
+    for number, username in enumerate(candidates, start=1):
         if username in tested:
             continue
 
         print(
-            f"[{number}/{len(USERNAMES)}] "
+            f"[{number}/{len(candidates)}] "
             f"Checking @{username} ... ",
             end="",
             flush=True
         )
 
-        result = await check_username(
-            client,
-            username
-        )
+        result = await check_username(client, username)
 
-        with open(
-            TESTED,
-            "a",
-            encoding="utf-8"
-        ) as f:
-
+        with open(TESTED, "a", encoding="utf-8") as f:
             f.write(username + "\n")
 
         if result is True:
-
             print("✅ AVAILABLE")
-
             available.append(username)
 
-            with open(
-                RESULTS,
-                "a",
-                encoding="utf-8"
-            ) as f:
-
+            with open(RESULTS, "a", encoding="utf-8") as f:
                 f.write(f"@{username}\n")
 
-        elif result is False:
-
+        elif result == "taken":
             print("❌ TAKEN")
 
-        else:
+        elif result == "purchase":
+            print("💎 PURCHASE AVAILABLE")
+            purchase_available.append(username)
 
+        else:
             print("⚠️ UNKNOWN")
 
-        # فاصله‌ی منطقی بین درخواست‌ها
         await asyncio.sleep(1)
 
     await client.disconnect()
@@ -360,8 +353,9 @@ async def main():
     print(" FINISHED")
     print("=" * 55)
     print()
-    print(f"Available: {len(available)}")
-    print(f"Saved to: {RESULTS}")
+    print(f"Free available: {len(available)}")
+    print(f"Purchase available: {len(purchase_available)}")
+    print(f"Saved free usernames to: {RESULTS}")
     print()
 
 
